@@ -2,8 +2,17 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:LoginClipboardApp"
+             xmlns:vm="clr-namespace:LoginClipboardApp.ViewModel"
+             xmlns:vw="clr-namespace:LoginClipboardApp.Views"
              >
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <DataTemplate DataType="{x:Type vm:UserCredentialsViewModel}">
+                <vw:UserCredentialsView />
+            </DataTemplate>
+        </ResourceDictionary>   
     </Application.Resources>
 </Application>
