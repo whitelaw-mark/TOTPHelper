@@ -1,83 +1,35 @@
-﻿using LoginClipboardApp.TOTP;
-using System.ComponentModel;
+﻿using LoginClipboardApp.Model;
+using LoginClipboardApp.TOTP;
 using System.Windows;
-using System.Windows.Input;
-using System.Threading;
 
-namespace LoginClipboardApp
+namespace LoginClipboardApp.ViewModel
 {
-    public class BaseViewModel : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged(string propName)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
-        }
-    }
-    public class RelayCommand : ICommand
-    {
-        private readonly Action execute;
-        private readonly Func<bool>? canExecute;
-
-        public event EventHandler? CanExecuteChanged;
-
-        public RelayCommand(Action execute)
-        {
-            this.execute = execute;
-        }
-
-        public RelayCommand(Action execute, Func<bool> canExecute)
-        {
-            this.execute = execute;
-            this.canExecute = canExecute;
-        }
-
-        public void NotifyCanExecuteChanged()
-        {
-            CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        public bool CanExecute(object? parameter)
-        {
-            return this.canExecute?.Invoke() != false;
-        }
-
-        public void Execute(object? parameter)
-        {
-            if (CanExecute(parameter))
-            {
-                this.execute();
-            }
-        }
-    }
-
-
-    public class AppViewModel : BaseViewModel
+    public class UserCredentialsViewModel : BaseViewModel
     {
         private readonly Timer timer;
         private readonly Authenticator authenticator = new();
-        public AppViewModel()
+        public UserCredentialsViewModel(UserCredentialsProfile profile)
         {
-            UserName = LoginClipboardApp.Properties.Settings.Default.User;
-            Password = LoginClipboardApp.Properties.Settings.Default.Password;
-            Secret = LoginClipboardApp.Properties.Settings.Default.TotpSecret;
+            UserName = profile.email;
+            Password = profile.password;
+            Secret = profile.totpSecret;
+
             CopyUserNameCommand = new RelayCommand(CopyUserName);
             CopyPasswordCommand = new RelayCommand(CopyPassword);
             CopyTOTPCommand = new RelayCommand(CopyTOTP);
             CopyClipboardCommand = new RelayCommand(CopyClipboardContent);
 
             var currentSecond = DateTime.Now.Second;
-            var next = (30-(currentSecond % 30))*1000;
+            var next = (30 - (currentSecond % 30)) * 1000;
             timer = new Timer(_ => UpdateTOTP(), null, next, 30000);
             UpdateTOTP();
         }
-
-        public string UserName { get; set; } 
+    
+        public string UserName { get; set; }
         public string Password { get; set; }
-        private string Secret { get; set; }
+        public string Secret { get; set; }
         public string ClipboardContent { get; set; } = string.Empty;
         public string TOTP { get; set; } = string.Empty;
-        
 
         public RelayCommand CopyUserNameCommand { get; set; }
         public void CopyUserName()
@@ -106,7 +58,7 @@ namespace LoginClipboardApp
             SetClipboard(ClipboardContent);
             this.ClipboardContent = string.Empty;
             OnPropertyChanged(nameof(ClipboardContent));
-        }   
+        }
 
         private void UpdateTOTP()
         {
@@ -120,5 +72,6 @@ namespace LoginClipboardApp
             Clipboard.SetText(clipboard);
             Clipboard.Flush();
         }
+
     }
 }
